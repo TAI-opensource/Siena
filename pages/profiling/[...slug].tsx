@@ -18,9 +18,9 @@ export default function Profiling() {
   const [modal, setModal] = useState<Property | null>(null);
   const [sortBy, setSortBy] = useState('');
 
-  const cityName = Array.isArray(slug) ? slug[slug.length - 2] || '' : '';
-  const tipo = Array.isArray(slug) ? slug[slug.length - 1] || '' : '';
-  const operation = Array.isArray(slug) ? slug[0] || '' : '';
+  const slugArr = Array.isArray(slug) ? slug : [];
+  const operation = slugArr[0] || '';
+  const cityName = slugArr.slice(1).join('-') || '';
 
   const cityDisplay = cityName
     .replace(/-/g, ' ')
