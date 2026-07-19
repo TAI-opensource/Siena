@@ -11,6 +11,10 @@ const nextConfig = {
         source: '/profiling/:operation/:city/:extra*',
         destination: '/quintoandar/alugar_imovel_:city.html',
       },
+      {
+        source: '/img/:path*',
+        destination: '/quintoandar/img/:path*',
+      },
     ];
   },
 };
