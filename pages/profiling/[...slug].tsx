@@ -10,15 +10,23 @@ interface Property {
 
 export default function Profiling() {
   const router = useRouter();
-  const { slug } = router.query;
   const [items, setItems] = useState<Property[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<Property | null>(null);
   const [sortBy, setSortBy] = useState('');
+  const [slugArr, setSlugArr] = useState<string[]>([]);
 
-  const slugArr = Array.isArray(slug) ? slug : [];
+  useEffect(() => {
+    const path = window.location.pathname.replace(/\/$/, '');
+    const parts = path.split('/').filter(Boolean);
+    const slugIdx = parts.indexOf('profiling');
+    if (slugIdx >= 0) {
+      setSlugArr(parts.slice(slugIdx + 1));
+    }
+  }, []);
+
   const operation = slugArr[0] || '';
   const citySlug = slugArr.slice(1).join('-') || '';
 
@@ -39,7 +47,7 @@ export default function Profiling() {
     .join(' ');
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (slugArr.length === 0) return;
     setLoading(true);
     const params = new URLSearchParams();
     if (citySearch) params.set('q', citySearch);
@@ -49,7 +57,7 @@ export default function Profiling() {
     fetch('/api/search?' + params.toString())
       .then(r => r.json())
       .then(d => { setItems(d.items); setTotal(d.total); setLoading(false); });
-  }, [router.isReady, cityName, page]);
+  }, [slugArr, citySearch, stateSearch, page]);
 
   const sorted = [...items].sort((a, b) => {
     if (sortBy === 'preco-asc') return parsePrice(a.preco) - parsePrice(b.preco);
