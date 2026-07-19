@@ -4,8 +4,12 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/quintoandar/:path*',
-        destination: '/quintoandar/:path*',
+        source: '/profiling/:operation/:city',
+        destination: '/quintoandar/alugar_imovel_:city.html',
+      },
+      {
+        source: '/profiling/:operation/:city/:extra*',
+        destination: '/quintoandar/alugar_imovel_:city.html',
       },
     ];
   },
