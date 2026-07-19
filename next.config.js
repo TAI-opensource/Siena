@@ -15,10 +15,6 @@ const nextConfig = {
         source: '/img/:path*',
         destination: '/quintoandar/img/:path*',
       },
-      {
-        source: '/imovel/:path*',
-        destination: 'https://www.quintoandar.com.br/imovel/:path*',
-      },
     ];
   },
 };
