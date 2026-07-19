@@ -20,9 +20,19 @@ export default function Profiling() {
 
   const slugArr = Array.isArray(slug) ? slug : [];
   const operation = slugArr[0] || '';
-  const cityName = slugArr.slice(1).join('-') || '';
+  const citySlug = slugArr.slice(1).join('-') || '';
 
-  const cityDisplay = cityName
+  const citySearch = citySlug
+    .replace(/-brasil$/i, '')
+    .replace(/-[a-z]{2}$/i, '')
+    .replace(/-/g, ' ')
+    .trim()
+    .toUpperCase();
+
+  const stateSearch = (citySlug.match(/-([a-z]{2})$/i) || [])[1]?.toUpperCase() || '';
+
+  const cityDisplay = citySlug
+    .replace(/-brasil$/i, '')
     .replace(/-/g, ' ')
     .split(' ')
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
@@ -32,7 +42,8 @@ export default function Profiling() {
     if (!router.isReady) return;
     setLoading(true);
     const params = new URLSearchParams();
-    if (cityName) params.set('cidade', cityName.replace(/-/g, ' ').toUpperCase());
+    if (citySearch) params.set('q', citySearch);
+    if (stateSearch) params.set('uf', stateSearch);
     params.set('page', String(page));
     params.set('limit', '24');
     fetch('/api/search?' + params.toString())
