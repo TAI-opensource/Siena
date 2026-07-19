@@ -1,0 +1,4 @@
+node_modules/
+data/caixa/imoveis_caixa_raw.json
+data/caixa/imoveis_caixa_normalized.json
+data/caixa/colibex_api_discovery.json

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Siena - Imóveis Caixa Econômica Federal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+    .header { background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 20px 30px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .header h1 { font-size: 24px; font-weight: 600; }
+    .header .badge { background: #ff6f00; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 500; }
+    .filters { background: white; padding: 16px 30px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .filters input, .filters select { padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+    .filters input:focus, .filters select:focus { border-color: #1a237e; box-shadow: 0 0 0 2px rgba(26,35,126,0.15); }
+    .filters input[type="text"] { min-width: 280px; }
+    .filters select { min-width: 180px; }
+    .btn { padding: 10px 20px; background: #1a237e; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
+    .btn:hover { background: #0d47a1; }
+    .btn-secondary { background: #e0e0e0; color: #333; }
+    .btn-secondary:hover { background: #bdbdbd; }
+    .results-bar { padding: 12px 30px; font-size: 14px; color: #666; background: white; border-bottom: 1px solid #eee; }
+    .results-bar strong { color: #1a237e; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 20px 30px; }
+    .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .card-img { width: 100%; height: 180px; object-fit: cover; background: #e0e0e0; }
+    .card-body { padding: 14px; }
+    .card-categoria { display: inline-block; background: #e8eaf6; color: #1a237e; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; margin-bottom: 8px; }
+    .card-titulo { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 4px; line-height: 1.3; }
+    .card-local { font-size: 13px; color: #666; margin-bottom: 10px; }
+    .card-details { display: flex; gap: 12px; font-size: 12px; color: #888; margin-bottom: 10px; flex-wrap: wrap; }
+    .card-details span { display: flex; align-items: center; gap: 4px; }
+    .card-preco { font-size: 20px; font-weight: 700; color: #1b5e20; }
+    .card-avaliacao { font-size: 12px; color: #999; text-decoration: line-through; }
+    .card-desconto { display: inline-block; background: #e53935; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+    .card-ref { font-size: 11px; color: #aaa; margin-top: 6px; }
+    .pagination { display: flex; justify-content: center; gap: 8px; padding: 20px 30px; }
+    .pagination button { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .pagination button:hover { background: #f5f5f5; }
+    .pagination button.active { background: #1a237e; color: white; border-color: #1a237e; }
+    .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .loading { text-align: center; padding: 60px; color: #999; font-size: 16px; }
+    .no-results { text-align: center; padding: 60px; color: #999; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: white; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 24px; }
+    .modal h2 { font-size: 18px; margin-bottom: 12px; }
+    .modal .close { float: right; background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+    .modal img { width: 100%; border-radius: 8px; margin: 10px 0; }
+    .modal .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+    .modal .detail-label { color: #666; }
+    .modal .detail-value { font-weight: 500; }
+    .stats-bar { display: flex; gap: 20px; padding: 10px 30px; background: #fafafa; border-bottom: 1px solid #eee; font-size: 13px; color: #666; flex-wrap: wrap; }
+    .stats-bar .stat { display: flex; align-items: center; gap: 4px; }
+    .stats-bar .stat strong { color: #1a237e; }
+    @media (max-width: 768px) {
+      .filters { flex-direction: column; }
+      .filters input, .filters select { min-width: 100%; }
+      .grid { grid-template-columns: 1fr; padding: 12px; }
+      .header { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Siena</h1>
+  <span class="badge" id="totalBadge">Carregando...</span>
+  <span style="margin-left:auto; font-size:13px; opacity:0.8">Imóveis Caixa Econômica Federal</span>
+</div>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<div class="filters">
+  <input type="text" id="busca" placeholder="Buscar por endereço, bairro, cidade...">
+  <select id="estado">
+    <option value="">Todos os estados</option>
+    <option value="RJ">Rio de Janeiro (RJ)</option>
+    <option value="SP">São Paulo (SP)</option>
+    <option value="PR">Paraná (PR)</option>
+    <option value="SC">Santa Catarina (SC)</option>
+  </select>
+  <select id="categoria">
+    <option value="">Todas as categorias</option>
+  </select>
+  <select id="cidade">
+    <option value="">Todas as cidades</option>
+  </select>
+  <button class="btn" onclick="search(1)">Buscar</button>
+  <button class="btn btn-secondary" onclick="clearFilters()">Limpar</button>
+</div>
+
+<div class="results-bar" id="resultsBar"></div>
+<div class="grid" id="grid"><div class="loading">Carregando imóveis...</div></div>
+<div class="pagination" id="pagination"></div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="close" onclick="closeModal()">&times;</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+  let currentPage = 1;
+  const LIMIT = 24;
+
+  async function loadStats() {
+    const res = await fetch('/api/stats');
+    const stats = await res.json();
+    document.getElementById('totalBadge').textContent = stats.total.toLocaleString('pt-BR') + ' imóveis';
+
+    const topCities = Object.entries(stats.byCidade)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([c, n]) => `${c}: ${n}`)
+      .join(' | ');
+    document.getElementById('statsBar').innerHTML = `
+      <div class="stat"><strong>${stats.total.toLocaleString('pt-BR')}</strong> imóveis</div>
+      <div class="stat"><strong>${Object.keys(stats.byCidade).length}</strong> cidades</div>
+      <div class="stat"><strong>${Object.keys(stats.byCategoria).length}</strong> categorias</div>
+    `;
+  }
+
+  async function loadCategories() {
+    const res = await fetch('/api/categories');
+    const cats = await res.json();
+    const sel = document.getElementById('categoria');
+    cats.forEach(([cat, count]) => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = `${cat} (${count.toLocaleString('pt-BR')})`;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function loadCities(estado) {
+    const res = await fetch('/api/cities');
+    const cities = await res.json();
+    const sel = document.getElementById('cidade');
+    sel.innerHTML = '<option value="">Todas as cidades</option>';
+    const filtered = estado ? cities.filter(([c]) => c.endsWith(estado)) : cities;
+    filtered.slice(0, 100).forEach(([city, count]) => {
+      const opt = document.createElement('option');
+      opt.value = city;
+      opt.textContent = `${city} (${count.toLocaleString('pt-BR')})`;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function search(page = 1) {
+    currentPage = page;
+    const params = new URLSearchParams();
+    const busca = document.getElementById('busca').value;
+    const estado = document.getElementById('estado').value;
+    const categoria = document.getElementById('categoria').value;
+    const cidade = document.getElementById('cidade').value;
+
+    if (busca) params.set('q', busca);
+    if (estado) params.set('estado', estado);
+    if (categoria) params.set('categoria', categoria);
+    if (cidade) params.set('cidade', cidade);
+    params.set('page', page);
+    params.set('limit', LIMIT);
+
+    document.getElementById('grid').innerHTML = '<div class="loading">Buscando...</div>';
+
+    const res = await fetch('/api/search?' + params.toString());
+    const data = await res.json();
+
+    document.getElementById('resultsBar').innerHTML =
+      `<strong>${data.total.toLocaleString('pt-BR')}</strong> imóveis encontrados`;
+
+    if (data.items.length === 0) {
+      document.getElementById('grid').innerHTML = '<div class="no-results">Nenhum imóvel encontrado com esses filtros.</div>';
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    document.getElementById('grid').innerHTML = data.items.map(item => `
+      <div class="card" onclick='showDetail(${JSON.stringify(item).replace(/'/g, "&#39;")})'>
+        ${item.foto ? `<img class="card-img" src="${item.foto}" alt="" onerror="this.style.display='none'">` : '<div class="card-img" style="display:flex;align-items:center;justify-content:center;color:#bbb">Sem foto</div>'}
+        <div class="card-body">
+          <span class="card-categoria">${item.categoria}</span>
+          ${item.modalidade ? `<span class="card-categoria" style="background:#fff3e0;color:#e65100;margin-left:4px">${item.modalidade}</span>` : ''}
+          <div class="card-titulo">${item.endereco || item.bairro || item.cidade}</div>
+          <div class="card-local">${item.bairro} · ${item.cidade}</div>
+          <div class="card-details">
+            ${item.quartos ? `<span>🛏 ${item.quartos} quartos</span>` : ''}
+            ${item.area ? `<span>📐 ${item.area} m²</span>` : ''}
+          </div>
+          <div>
+            <span class="card-preco">${item.valor_venda || 'Consultar'}</span>
+            ${item.desconto ? `<span class="card-desconto">-${item.desconto}%</span>` : ''}
+          </div>
+          ${item.valor_avaliacao ? `<div class="card-avaliacao">Avaliação: ${item.valor_avaliacao}</div>` : ''}
+          <div class="card-ref">REF: ${item.id}</div>
+        </div>
+      </div>
+    `).join('');
+
+    renderPagination(data.total, page);
+  }
+
+  function renderPagination(total, current) {
+    const pages = Math.ceil(total / LIMIT);
+    if (pages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+
+    let html = '';
+    html += `<button ${current === 1 ? 'disabled' : ''} onclick="search(1)">«</button>`;
+    html += `<button ${current === 1 ? 'disabled' : ''} onclick="search(${current - 1})">‹</button>`;
+
+    const start = Math.max(1, current - 3);
+    const end = Math.min(pages, current + 3);
+    for (let i = start; i <= end; i++) {
+      html += `<button class="${i === current ? 'active' : ''}" onclick="search(${i})">${i}</button>`;
+    }
+
+    html += `<button ${current === pages ? 'disabled' : ''} onclick="search(${current + 1})">›</button>`;
+    html += `<button ${current === pages ? 'disabled' : ''} onclick="search(${pages})">»</button>`;
+    document.getElementById('pagination').innerHTML = html;
+  }
+
+  function showDetail(item) {
+    const content = document.getElementById('modalContent');
+    content.innerHTML = `
+      ${item.foto ? `<img src="${item.foto}" alt="" onerror="this.style.display='none'">` : ''}
+      <h2>${item.categoria} · ${item.bairro}</h2>
+      <div class="detail-row"><span class="detail-label">Cidade</span><span class="detail-value">${item.cidade}</span></div>
+      <div class="detail-row"><span class="detail-label">Endereço</span><span class="detail-value">${item.endereco || '—'}</span></div>
+      ${item.numero ? `<div class="detail-row"><span class="detail-label">Número</span><span class="detail-value">${item.numero}</span></div>` : ''}
+      <div class="detail-row"><span class="detail-label">Categoria</span><span class="detail-value">${item.categoria}</span></div>
+      <div class="detail-row"><span class="detail-label">Modalidade</span><span class="detail-value">${item.modalidade || '—'}</span></div>
+      <div class="detail-row"><span class="detail-label">Valor Venda</span><span class="detail-value" style="color:#1b5e20;font-size:18px;font-weight:700">${item.valor_venda || 'Consultar'}</span></div>
+      ${item.valor_avaliacao ? `<div class="detail-row"><span class="detail-label">Avaliação</span><span class="detail-value" style="text-decoration:line-through;color:#999">${item.valor_avaliacao}</span></div>` : ''}
+      ${item.desconto ? `<div class="detail-row"><span class="detail-label">Desconto</span><span class="detail-value" style="color:#e53935;font-weight:700">${item.desconto}%</span></div>` : ''}
+      ${item.quartos ? `<div class="detail-row"><span class="detail-label">Quartos</span><span class="detail-value">${item.quartos}</span></div>` : ''}
+      ${item.area ? `<div class="detail-row"><span class="detail-label">Área</span><span class="detail-value">${item.area} m²</span></div>` : ''}
+      <div class="detail-row"><span class="detail-label">Referência</span><span class="detail-value">${item.id}</span></div>
+      ${item.ref_caixa ? `<div class="detail-row"><span class="detail-label">Ref. Caixa</span><span class="detail-value">${item.ref_caixa}</span></div>` : ''}
+      ${item.link_detalhes ? `<div style="margin-top:16px;text-align:center"><a href="${item.link_detalhes}" target="_blank" class="btn" style="text-decoration:none;display:inline-block">Ver no site da Caixa</a></div>` : ''}
+    `;
+    document.getElementById('modal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+  }
+
+  function clearFilters() {
+    document.getElementById('busca').value = '';
+    document.getElementById('estado').value = '';
+    document.getElementById('categoria').value = '';
+    document.getElementById('cidade').value = '';
+    loadCities('');
+    search(1);
+  }
+
+  document.getElementById('busca').addEventListener('keydown', e => {
+    if (e.key === 'Enter') search(1);
+  });
+
+  document.getElementById('estado').addEventListener('change', () => {
+    loadCities(document.getElementById('estado').value);
+  });
+
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal')) closeModal();
+  });
+
+  loadStats();
+  loadCategories();
+  loadCities('');
+  search(1);
+</script>
+
+</body>
+</html>
